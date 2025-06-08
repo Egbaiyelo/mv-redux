@@ -5,18 +5,15 @@
  * 
  */
 
-/**
- * @param container The HTMLElement holding the slider div
- */
-export function VecSliderGroup(container: HTMLElement) {
-    console.log(container)
-}
 
 
+// -- Take inspiration from the textbook too
 
 export type SliderPreset = 'pi' | 'degrees';
 
 export interface SliderOptions {
+
+    // Given this is expanded to other attributes of inputs, just like HTML, any unqualified attributes will be ignored
 
     /**
      * Preset values for min, max and step.
@@ -58,18 +55,24 @@ export interface SliderOptions {
     label?: boolean;
 
     /**
-     * Overrides the canvas's width, in CSS pixels. Does nothing if {@linkcode fullscreen} is
-     * enabled.
-     *
-     * Defaults to 512px, or the canvas's `width` attribute if it has one.
+     * The placeholder value.
+     * 
+     * Defaults to halfway point between min and max
      */
-    placeholder?: number;
+    value?: number;
 
     /**
      * Allows quick addition to classlist of the input value.
      */
     classNames?: string;
     // Maybe add container bool too.
+
+    //-- arrange the args
+
+    /**
+     * Element which the result would be appended to.
+     */
+    container?: HTMLElement;
 }
 
 /**
@@ -80,14 +83,19 @@ export interface SliderOptions {
  */
 export function CreateSlider(name: string, options?: SliderOptions) {
 
+    //-- handle presets
     const rangeElem = document.createElement('input');
 
     // result template
     const result: {
         input: HTMLInputElement;
+        getValue: () => string | number;
+        setValue: (val: string | number) => void;
         label?: HTMLLabelElement;
     } = {
         input: rangeElem,
+        getValue: () => parseFloat(rangeElem.value),
+        setValue: (val: string | number) => { rangeElem.value = String(val) },
     };
 
     rangeElem.type = 'range';
@@ -96,12 +104,24 @@ export function CreateSlider(name: string, options?: SliderOptions) {
 
     //-- Add checks later, max>min, step reasonable, value reasonable (max-min/2)
     // min, max, step
-    rangeElem.min = String(options?.min ?? 0);
-    rangeElem.max = String(options?.max ?? 100);
-    rangeElem.step = String(options?.step ?? 1);
+    let min = options?.min ?? 0;
+    let max = options?.max ?? 100;
+    let step = options?.step ?? 1;
+    let value = options?.value ?? 1;
 
-    //-- Value to max - min / 2
-    rangeElem.value = String(options?.placeholder ?? 0);
+    //! no known reason for max to be less than min
+    //-- Maybe throw error
+    if (max < min) {
+        min = 0; max = 100;
+    }
+    if (value < min || value > max || (value % step) !== 0) { // or val not multiple of step 
+        value = (max - min) / 2;
+    }
+
+    rangeElem.min = String(min);
+    rangeElem.max = String(max);
+    rangeElem.step = String(step);
+    rangeElem.value = String(value);
 
     // Adding label
     if (options?.label) {
@@ -118,15 +138,4 @@ export function CreateSlider(name: string, options?: SliderOptions) {
 
     return result;
 }
-
-// export function CreateLabelledSlider(name: string, options?: SliderOptions) {
-
-//     const container = document.createElement('div');
-
-//     const label = document.createElement('label');
-//     label.htmlFor = name;
-
-// }
-
-
 

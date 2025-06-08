@@ -10,8 +10,9 @@ gl.enable(gl.DEPTH_TEST);
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 const control = document.querySelector('#controlPanel');
-let { input } = CreateSlider("first", {classNames: "jid"});
+let { input, label } = CreateSlider("first", {label: true});
 control.append(input);
+control.append(label)
 
 console.log(control)
-console.log(input)
+console.log(input.classList)
