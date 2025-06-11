@@ -1,5 +1,5 @@
 import { initCanvas } from '../lib/init/canvas.js';
-import { CreateSlider } from '../lib/helpers/input.js'
+import * as helpers from '../lib/helpers/input.js';
 
 const canvas = document.querySelector('canvas');
 const gl = initCanvas(canvas);
@@ -10,9 +10,13 @@ gl.enable(gl.DEPTH_TEST);
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 const control = document.querySelector('#controlPanel');
-let { input, label } = CreateSlider("first", 'color',{label: true}, );
-control.append(input);
-control.append(label)
+let { input, label } = helpers.createInput("first", 'color', {label: true});
+let stuff = helpers.createInputGroup('rotation', 'range', ['x', 'y', 'z'], { label: true});
 
-console.log(control)
-console.log(input.classList)
+control.append(input);
+control.append(label);
+control.append(stuff.container);
+
+console.log(stuff);
+console.log(control);
+console.log(input.classList);
