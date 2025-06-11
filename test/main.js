@@ -10,7 +10,7 @@ gl.enable(gl.DEPTH_TEST);
 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 const control = document.querySelector('#controlPanel');
-let { input, label } = CreateSlider("first", {label: true});
+let { input, label } = CreateSlider("first", 'color',{label: true}, );
 control.append(input);
 control.append(label)
 

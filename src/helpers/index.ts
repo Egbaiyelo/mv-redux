@@ -1,3 +1,5 @@
+export * from './input.js';
+
 /**
  * Debounces a function, returning a new version of it that will only execute after {@linkcode wait}
  * milliseconds have been passed since its last invocation.
