@@ -237,19 +237,36 @@ export function createInputGroup(name: string, type: string, axes : string[] = [
     
     const container = document.createElement('div');
     const sliders : { [key: string]: any } = {};
-    console.log(type)
+
+    //-- Now need to handle labels dynamically
+    let inputMaker: (name: string, options: InputOptions) => HTMLInputElement;
+    switch (type) {
+        case 'range': inputMaker = (name : string, options: InputOptions) => createSlider(name, options); break;
+        case 'color': inputMaker = (name : string, options: InputOptions) => createColorPicker(name, options); break;
+        default: throw new Error(`Unsupported input type: ${type}`);
+    }
     
-    //-- accomodate other types
     for (const axis of axes) {
         const axisName = `${name}-${axis}`;
-        const slider = createSlider(axisName, {
+        const axisElem = inputMaker(axisName, {
             ...options,
             labelText: `${name} ${axis}`
         });
 
-        sliders[axis.toLowerCase()] = slider;
-        container.appendChild(slider);
-        //-- need to accomodate more containers
+        sliders[axis.toLowerCase()] = axisElem;
+        container.appendChild(axisElem);
+
+        //-- call for optimization
+        if (options?.labelText) options.label = true;
+        if (options?.label) {
+            const labelElem = document.createElement('label');
+            labelElem.htmlFor = axisName;
+            labelElem.innerHTML = options?.labelText ?? axisName;
+            //-- I now realize some may require label above or below
+            //-- same as the x-rotate and rotate-x convention issue
+            container.append(labelElem);
+        }
+        //-- need to accomodate possible containers
     }
 
     //-- need to review type safety
