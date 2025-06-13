@@ -69,3 +69,76 @@ export function curve(): Curve {
 
     return out;
 }
+
+
+/**
+ * Locates all the -uniforms in the program and keys them by name.
+ * 
+ * WebGLUniformLocations accessible by uniformNameLocation.
+ * 
+ * @param {WebGL2RenderingContext} gl The WebGL context
+ * @param program The WebGL program
+ */
+// Getting Uniforms
+// A more advanced one would separate the structs but I cant really do that right now without research
+export function getUniformLocators(gl: WebGL2RenderingContext, program: WebGLProgram) {
+
+    //-- lot of typing to be done <any> but works for now
+    let Locators : Record<string, WebGLUniformLocation | Record<string, WebGLUniformLocation>> | any = {};
+    // Record<string, number | Record<string, number>> = {};
+    const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+    
+    for (let i = 0; i < numUniforms; i++) {
+        const uniform = gl.getActiveUniform(program, i);
+        // console.log(";;;;;;;;;", gl.getActiveUniformBlock(program, i));
+        const uniformName = uniform?.name || "unknown";
+    
+        // Checking for structs
+        const nameParts = uniformName.split('.');
+        let uniformLocation = gl.getUniformLocation(program, uniformName);
+    
+        // Convention uniformNameLocation
+        let uniformLocID = uniformName + "Location";
+        // Handles normal uniforms.
+        if (nameParts.length == 1){
+            Locators[uniformLocID] = uniformLocation ?? -1;
+        }
+    
+        // Handles structs
+        if (nameParts.length > 1){
+    
+            let uStructLocID = nameParts[0];  // First part, i use it as a mapping to pack multiple
+            let structLocationObject;
+
+            // To make array
+            if (uStructLocID.includes('[')) {
+
+                let [uStructArrayLocID, remaining] = uStructLocID.split('[');
+
+                let index = parseInt(remaining.split(']')[0]);
+
+                let structArrayLocationObject  = Locators[uStructArrayLocID] ?? [];
+                if (!Locators[uStructArrayLocID]) Locators[uStructArrayLocID] = []
+                structArrayLocationObject[index] = Locators[uStructArrayLocID][index] ?? {};
+
+                
+                structLocationObject = structArrayLocationObject;
+                let structVarID = nameParts[1] + "Location";
+                structLocationObject[index][structVarID] =  uniformLocation;
+                
+                Locators[uStructArrayLocID] = structLocationObject;
+
+            } else {
+                // If existing map to it esle initialize
+                structLocationObject = Locators[uStructLocID] ?? {};      // Initialize if not already existing
+        
+                let structVarID = nameParts[1] + "Location";
+                structLocationObject[structVarID] =  uniformLocation; // Reassign to struct not loc {}
+        
+                // Reassigne, is till have normal ones in case of failure but ideally id remove the individuals
+                Locators[uStructLocID] = structLocationObject;
+            }
+        }
+    }
+    return Locators;
+}
